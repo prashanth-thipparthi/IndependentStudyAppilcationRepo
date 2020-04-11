@@ -153,37 +153,33 @@ func fillString(retunString string, toLength int) string {
 }
 func SendFile(conn net.Conn, filename string) {
 
-        defer conn.Close()
-        fmt.Println("opening file:",filename)
-        file, err := os.Open(filename)
+	defer conn.Close()
+	file, err := os.Open(filename)
 
-        Check(err, "Unable to open file, exiting")
+	Check(err, "Unable to open file, exiting")
 
-        fileInfo, err := file.Stat()
-        Check(err, "Unable to get file Stat, exiting")
-        
-        fileSize := fillString(strconv.FormatInt(fileInfo.Size(), 10), 10)
+	fileInfo, err := file.Stat()
+	Check(err, "Unable to get file Stat, exiting")
 
-        conn.Write([]byte(fileSize))
-        fileName := fillString(fileInfo.Name(), 32)
+	fileSize := fillString(strconv.FormatInt(fileInfo.Size(), 10), 10)
+	fileName := fillString(fileInfo.Name(), 32)
 
-        //conn.Write([]byte("FILE0"))
-        conn.Write([]byte(fileSize))
-        conn.Write([]byte(fileName))
+	//conn.Write([]byte("FILE0"))
+	conn.Write([]byte(fileSize))
+	conn.Write([]byte(fileName))
 
-        sendBuffer := make([]byte, BUFFERSIZE)
-        fmt.Println("Start sending file!")
-        nBytes := 0
-        for {
-                _, err = file.Read(sendBuffer)
-                if err == io.EOF {
-                        fmt.Println("reached end of file")
-                        break
-                }
-                n, _ := conn.Write(sendBuffer)
-                nBytes += n
-        }
-        fmt.Println("File: ", fileName ," has been sent, file size: ", fileSize , ", number of bytes sent: ", nBytes)
+	sendBuffer := make([]byte, BUFFERSIZE)
+	fmt.Println("Start sending file!")
+	nBytes := 0
+	for {
+		_, err = file.Read(sendBuffer)
+		if err == io.EOF {
+			break
+		}
+		n, _ := conn.Write(sendBuffer)
+		nBytes += n
+	}
+	fmt.Println("File: ", fileName ," has been sent, file size: ", fileSize , ", number of bytes sent: ", nBytes)
 }
 
 func handleRequest(clientCon net.Conn) {
