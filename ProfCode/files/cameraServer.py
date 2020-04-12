@@ -18,7 +18,7 @@ class MyTCPHandler(SocketServer.BaseRequestHandler):
         # self.request is the TCP socket connected to the client
         print "inside handle ...\n"
         filename ='img' + str(time()) + '.jpg'
-        fullfilename = '/run/user/1000/' + filename
+        fullfilename = '/' + filename
         camera = PiCamera()
 	try:
     		camera.capture(fullfilename)
