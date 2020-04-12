@@ -18,7 +18,7 @@ import (
 )
 
 const (
-        S_CONN_HOST = "0.0.0.0"
+        S_CONN_HOST = "192.168.43.48"
         S_CONN_PORT = "8181"
         S_CONN_TYPE = "tcp"
         CONN_HOST = "0.0.0.0"
@@ -187,7 +187,7 @@ func handleRequest(clientCon net.Conn) {
         var processedFileName string 
         conn, err := net.Dial(S_CONN_TYPE, S_CONN_HOST+":"+S_CONN_PORT)
         Check(err, "Unable to create file")
-        data = RecvFile(conn,"/home/pi/")
+        data = RecvFile(conn,"/home/tnr/")
         fmt.Println("Received file: ",data)
         var fileName string
         fileName = data
