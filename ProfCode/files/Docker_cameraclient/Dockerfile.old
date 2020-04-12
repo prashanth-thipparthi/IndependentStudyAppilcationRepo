@@ -1,0 +1,35 @@
+FROM denismakogon/gocv-alpine:4.0.1-buildstage as build-stage
+
+RUN mkdir /root/.ssh/
+COPY id_rsa /root/.ssh/
+COPY id_rsa.pub /root/.ssh/
+
+RUN chmod 600 /root/.ssh/id_rsa
+RUN chmod 600 /root/.ssh/id_rsa.pub
+
+RUN apk update 
+RUN apk add openssh
+
+RUN ssh-keyscan github.com >> /root/.ssh/known_hosts
+
+COPY setup.sh /
+
+RUN sh /setup.sh
+
+RUN go get -u -d gocv.io/x/gocv
+RUN cd $GOPATH/src/gocv.io/x/gocv && go build -o $GOPATH/bin/gocv-version ./cmd/version/main.go
+
+FROM denismakogon/gocv-alpine:4.0.1-runtime
+
+COPY --from=build-stage /go/bin/gocv-version /gocv-version
+
+RUN cd $GOPATH/bin
+
+RUN echo $PATH
+
+RUN echo $GOPATH
+
+#RUN which go 
+#CMD ["go","run", "/IndependentStudyAppilcationRepo/ProfCode/files/cameraClient.go"]
+
+EXPOSE 8180
