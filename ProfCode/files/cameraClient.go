@@ -187,7 +187,9 @@ func handleRequest(clientCon net.Conn) {
         var processedFileName string 
         conn, err := net.Dial(S_CONN_TYPE, S_CONN_HOST+":"+S_CONN_PORT)
         Check(err, "Unable to create file")
-        data = RecvFile(conn,"/home/tnr/")
+        home, err := os.UserHomeDir()
+        Check(err, "Unable to get home directory")
+        data = RecvFile(conn,home+"/")
         fmt.Println("Received file: ",data)
         var fileName string
         fileName = data

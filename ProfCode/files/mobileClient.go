@@ -70,6 +70,8 @@ func main(){
     conn, err := net.Dial(CONN_TYPE, CONN_HOST+":"+CONN_PORT)
     Check(err, "Unable to create file")
     //SendText(conn,"text","pi-1,facedetection")
-    data = RecvFile(conn,"/home/pi/")
+    home, err := os.UserHomeDir()
+    Check(err, "Unable to get home directory")
+    data = RecvFile(conn,home+"/")
     fmt.Println("Received file: ",data)
 }
