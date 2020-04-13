@@ -18,7 +18,7 @@ import (
 )
 
 const (
-        S_CONN_HOST = "192.168.43.48"
+//        S_CONN_HOST = "192.168.43.48"
         S_CONN_PORT = "8181"
         S_CONN_TYPE = "tcp"
         CONN_HOST = "0.0.0.0"
@@ -26,6 +26,9 @@ const (
         CONN_TYPE = "tcp"
         BUFFERSIZE = 1024
 )
+
+var ip = []string{"192.168.43.48",""}
+
 func Check(e error, s string) {
         if e != nil {
                 fmt.Println(s)
@@ -179,31 +182,58 @@ func SendFile(conn net.Conn, filename string) {
 		n, _ := conn.Write(sendBuffer)
 		nBytes += n
 	}
-	fmt.Println("File: ", fileName ," has been sent, file size: ", fileSize , ", number of bytes sent: ", nBytes)
+	fmt.Println("File: ", fileName ," has been sent, file size: ", fileSize, ", number of bytes sent: ", nBytes)
+}
+
+func RecvText(conn net.Conn,  typeOfData string) string {
+	//defer conn.Close()
+	fmt.Println("About to receive ", typeOfData)
+	buffer := make([]byte, 64)
+	conn.Read(buffer)
+	//data := strings.Split(string(buffer), ":")[0]
+	data := string(buffer)
+        fmt.Println("data:"+data)
+        return data
 }
 
 func handleRequest(clientCon net.Conn) {
-        var data string 
-        var processedFileName string 
+    var msg string
+    var processedFileName string
+    processedFileName = "" 
+    msg = RecvText(clientCon,  "string")
+    options := strings.Split(msg, ",")
+    rasperryIpIndex, err := strconv.Atoi(options[0])
+    Check(err, "Unable to convert string to integer")
+    fileName := getImageFromRaspberrypi(ip[rasperryIpIndex])
+    img := gocv.IMRead(fileName, gocv.IMReadColor )
+    if img.Empty() {
+       fmt.Println("Unable to read Image file")
+    } else {
+       fmt.Println("processing the image option:"+options[1])
+       //go faceDetection(img)
+      options[1] = "facedetection" 
+       switch options[1]{
+          case "facedetection":
+              processedFileName = faceDetection(img)
+          case "faceblur":
+              processedFileName = faceDetection(img)        
+          default:
+              fmt.Println("Invalid option")       
+      }
+    } 
+    SendFile(clientCon, processedFileName)
+}
+
+func getImageFromRaspberrypi(S_CONN_HOST string) string {
+        var data string
+        fmt.Println("connecting to:"+S_CONN_HOST) 
         conn, err := net.Dial(S_CONN_TYPE, S_CONN_HOST+":"+S_CONN_PORT)
-        Check(err, "Unable to create file")
+        Check(err, "Unable to connect to server")
         home, err := os.UserHomeDir()
         Check(err, "Unable to get home directory")
         data = RecvFile(conn,home+"/")
         fmt.Println("Received file: ",data)
-        var fileName string
-        fileName = data
-        fmt.Println("About to call ConnectToSend() to send file ", fileName)
-        img := gocv.IMRead(fileName, gocv.IMReadColor )
-        if img.Empty() {
-        fmt.Println("Unable to read Image file")
-        //   return nil
-        } else {
-           fmt.Println("About to detect face")
-           //go faceDetection(img)
-           processedFileName = faceDetection(img) 
-        }
-        SendFile(clientCon, processedFileName)
+        return data 
 }
 
 func main() {
@@ -217,6 +247,7 @@ func main() {
                 i+=1
                 // Listen for an incoming connection.
                 conn, err := l.Accept()
+                defer conn.Close()
                 Check(err, "Error when trying to accept")
                 fmt.Println("Accepted connection ", i)
                 // Handle connections

@@ -35,7 +35,8 @@ func RecvFile(conn net.Conn, path string) string {
 	fileSize, _ := strconv.ParseInt(strings.Trim(string(bufferFileSize), ":"), 10, 64)
 	fmt.Println("the file size is ", fileSize)
 	conn.Read(bufferFileName)
-	fileName := path +"ck" +strings.Trim(string(bufferFileName), ":")
+        fmt.Println("fileName:"+string(bufferFileName))
+	fileName := path +strings.Trim(string(bufferFileName), ":")
 
 	//newFile, err := os.Create("img_" + strconv.Itoa(i) + ".jpg")
 	newFile, err := os.Create(fileName)
@@ -56,11 +57,11 @@ func RecvFile(conn net.Conn, path string) string {
 		receivedBytes += wr
 	}
 	fmt.Println("Received file: ", fileName,", bytes: ", receivedBytes)
-	return fileName
+	return fileName 
 }
 
 func SendText(conn net.Conn, typeOfData string, data string) {
-        defer conn.Close()
+        
 //        conn.Write([]byte(typeOfData))
         conn.Write([]byte(data))
 }
@@ -69,7 +70,8 @@ func main(){
     var data string
     conn, err := net.Dial(CONN_TYPE, CONN_HOST+":"+CONN_PORT)
     Check(err, "Unable to create file")
-    //SendText(conn,"text","pi-1,facedetection")
+    defer conn.Close()
+    SendText(conn,"text","0,facedetection")
     home, err := os.UserHomeDir()
     Check(err, "Unable to get home directory")
     data = RecvFile(conn,home+"/")
