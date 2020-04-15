@@ -78,7 +78,7 @@ COPY setup.sh /
 
 RUN sh /setup.sh
 
-CMD ["go","run", "/IndependentStudyAppilcationRepo/ProfCode/files/cameraClient.go"]
+CMD ["go","run", "/IndependentStudyAppilcationRepo/EdgeServer/cameraClient.go"]
 
 EXPOSE 8180
 

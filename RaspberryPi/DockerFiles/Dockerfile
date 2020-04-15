@@ -16,6 +16,6 @@ COPY setup.sh /
 
 RUN sh /setup.sh
 
-CMD ["python", "/IndependentStudyAppilcationRepo/ProfCode/files/cameraServer.py"]
+CMD ["python", "/IndependentStudyAppilcationRepo/RaspberryPi/cameraServer.py"]
 
 EXPOSE 8181
