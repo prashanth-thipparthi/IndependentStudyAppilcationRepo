@@ -71,7 +71,7 @@ func main(){
     conn, err := net.Dial(CONN_TYPE, CONN_HOST+":"+CONN_PORT)
     Check(err, "Unable to create file")
     defer conn.Close()
-    SendText(conn,"text","0,facedetection")
+    SendText(conn,"text","192.168.43.48,facedetection")
     home, err := os.UserHomeDir()
     Check(err, "Unable to get home directory")
     data = RecvFile(conn,home+"/")

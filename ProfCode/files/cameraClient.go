@@ -203,7 +203,7 @@ func handleRequest(clientCon net.Conn) {
     msg = RecvText(clientCon,  "string")
     options := strings.Split(msg, ",")
     //rasperryIpIndex, err := strconv.Atoi(options[0]) // if we want to  assign rpi's indices and use their index we can uncomment this line
-    Check(err, "Unable to convert string to integer")
+    //Check(err, "Unable to convert string to integer")
     //fileName := getImageFromRaspberrypi(ip[rasperryIpIndex])
     fileName := getImageFromRaspberrypi(strings.TrimSpace(options[0]))
     img := gocv.IMRead(fileName, gocv.IMReadColor )
