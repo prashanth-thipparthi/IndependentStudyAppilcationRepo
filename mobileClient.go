@@ -12,7 +12,7 @@ import (
 )
 
 const (
-        CONN_HOST = "0.0.0.0"
+        CONN_HOST = "192.168.43.81"
         CONN_PORT = "8180"
         CONN_TYPE = "tcp"
         BUFFERSIZE = 1024
@@ -35,9 +35,9 @@ func RecvFile(conn net.Conn, path string) string {
 	fileSize, _ := strconv.ParseInt(strings.Trim(string(bufferFileSize), ":"), 10, 64)
 	fmt.Println("the file size is ", fileSize)
 	conn.Read(bufferFileName)
-        fmt.Println("fileName:"+string(bufferFileName))
+    fmt.Println("path received:"+string(bufferFileName))
 	fileName := path +strings.Trim(string(bufferFileName), ":")
-
+    fmt.Println("fileName:"+string(bufferFileName))
 	//newFile, err := os.Create("img_" + strconv.Itoa(i) + ".jpg")
 	newFile, err := os.Create(fileName)
 
@@ -71,9 +71,9 @@ func main(){
     conn, err := net.Dial(CONN_TYPE, CONN_HOST+":"+CONN_PORT)
     Check(err, "Unable to create file")
     defer conn.Close()
-    SendText(conn,"text","0,facedetection")
+    SendText(conn,"text","192.168.43.48,facedetection")
     home, err := os.UserHomeDir()
     Check(err, "Unable to get home directory")
-    data = RecvFile(conn,home+"/")
+    data = RecvFile(conn,home+"\\")
     fmt.Println("Received file: ",data)
 }
