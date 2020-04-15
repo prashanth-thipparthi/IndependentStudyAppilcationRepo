@@ -27,7 +27,7 @@ const (
         BUFFERSIZE = 1024
 )
 
-var ip = []string{"192.168.43.48",""}
+//var ip = []string{"192.168.43.48",""}
 
 func Check(e error, s string) {
         if e != nil {
@@ -40,7 +40,7 @@ func faceDetection(img gocv.Mat)(string) {
 
         defer img.Close()
 
-        xmlFile := "haarcascade_frontalface_alt.xml"
+        xmlFile := "/IndependentStudyAppilcationRepo/ProfCode/files/haarcascade_frontalface_alt.xml"
 
         // color for the rect when faces detected
         //blue := color.RGBA{0, 0, 255, 0}
@@ -202,9 +202,10 @@ func handleRequest(clientCon net.Conn) {
     processedFileName = "" 
     msg = RecvText(clientCon,  "string")
     options := strings.Split(msg, ",")
-    rasperryIpIndex, err := strconv.Atoi(options[0])
-    Check(err, "Unable to convert string to integer")
-    fileName := getImageFromRaspberrypi(ip[rasperryIpIndex])
+    //rasperryIpIndex, err := strconv.Atoi(options[0]) // if we want to  assign rpi's indices and use their index we can uncomment this line
+    //Check(err, "Unable to convert string to integer")
+    //fileName := getImageFromRaspberrypi(ip[rasperryIpIndex])
+    fileName := getImageFromRaspberrypi(strings.TrimSpace(options[0]))
     img := gocv.IMRead(fileName, gocv.IMReadColor )
     if img.Empty() {
        fmt.Println("Unable to read Image file")
