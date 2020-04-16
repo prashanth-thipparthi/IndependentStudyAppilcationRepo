@@ -72,8 +72,8 @@ func main(){
     Check(err, "Unable to create file")
     defer conn.Close()
     SendText(conn,"text","192.168.43.48,facedetection")
-    home, err := os.UserHomeDir()
-    Check(err, "Unable to get home directory")
-    data = RecvFile(conn,home+"\\")
+//    home, err := os.UserHomeDir()
+//    Check(err, "Unable to get home directory")
+    data = RecvFile(conn,"/tmp/data/")
     fmt.Println("Received file: ",data)
 }

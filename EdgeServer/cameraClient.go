@@ -11,14 +11,13 @@ import (
 
 import (
         //      "bytes"
-//        "errors"
         "time"
-        "image/color"
-        "gocv.io/x/gocv"
 )
 
 const (
 //        S_CONN_HOST = "192.168.43.48"
+        FACE_DETECT_HOST="0.0.0.0"
+        FACE_DETECT_PORT="8179"
         S_CONN_PORT = "8181"
         S_CONN_TYPE = "tcp"
         CONN_HOST = "0.0.0.0"
@@ -34,48 +33,6 @@ func Check(e error, s string) {
                 fmt.Println(s)
                 panic(e)
         }
-}
-
-func faceDetection(img gocv.Mat)(string) {
-
-        defer img.Close()
-
-        xmlFile := "/IndependentStudyAppilcationRepo/EdgeServer/haarcascade_frontalface_alt.xml"
-
-        // color for the rect when faces detected
-        //blue := color.RGBA{0, 0, 255, 0}
-        red := color.RGBA{255, 0, 0, 0}
-
-        // load classifier to recognize faces
-        classifier := gocv.NewCascadeClassifier()
-        defer classifier.Close()
-        fmt.Printf("one")
-        if !classifier.Load(xmlFile) {
-                fmt.Printf("Error reading cascade file: %v\n", xmlFile)
-                return ""
-        }
-        fmt.Printf("two")
-        // detect faces
-        rects := classifier.DetectMultiScale(img)
-        fmt.Printf("found %d faces\n", len(rects))
-        fmt.Printf("three")
-
-        // draw a rectangle around each face on the original image,
-        // along with text identifying as "Human"
-        for _, r := range rects {
-                gocv.Rectangle(&img, r, red, 2)
-        }
-        fmt.Printf("four")
-
-        fileName := "/tmp/" + strconv.FormatInt(time.Now().Unix(),10)+"_fd_image.jpg"
-        b := gocv.IMWrite(fileName, img)
-        if (!b) {
-                fmt.Println("Writing Mat to file failed")
-                return ""
-        }
-        fmt.Println("Just saved " + fileName)
-        return fileName
- //       netConn.ConnectToSend(conn_host, conn_port, "FILE0", fileName)
 }
 
 func RecvFile(conn net.Conn, path string) string {
@@ -138,9 +95,9 @@ func ConnectToSend(conn_host string, conn_port string, typeOfData string, data s
 }
 
 func SendText(conn net.Conn, typeOfData string, data string) {
-        defer conn.Close()
-        conn.Write([]byte(typeOfData))
-        conn.Write([]byte(data+";;;;"))
+  //      defer conn.Close()
+//        conn.Write([]byte(typeOfData))
+        conn.Write([]byte(data+":::"))
 }
 
 func fillString(retunString string, toLength int) string {
@@ -156,10 +113,14 @@ func fillString(retunString string, toLength int) string {
 }
 func SendFile(conn net.Conn, filename string) {
 
-	defer conn.Close()
+//	defer conn.Close()
+        time.Sleep(100000) 
+       // filename = "/tmp/1587069015_fd_image.jpg"
+        filename = strings.TrimSpace(string(filename))
+        fmt.Println("file:"+filename)
 	file, err := os.Open(filename)
 
-	Check(err, "Unable to open file, exiting")
+	Check(err, " Here Unable to open file, exiting:"+filename)
 
 	fileInfo, err := file.Stat()
 	Check(err, "Unable to get file Stat, exiting")
@@ -185,17 +146,36 @@ func SendFile(conn net.Conn, filename string) {
 	fmt.Println("File: ", fileName ," has been sent, file size: ", fileSize, ", number of bytes sent: ", nBytes)
 }
 
-func RecvText(conn net.Conn,  typeOfData string) string {
+func RecvText(conn net.Conn, typeOfData string) string {
 	//defer conn.Close()
 	fmt.Println("About to receive ", typeOfData)
 	buffer := make([]byte, 64)
 	conn.Read(buffer)
-	//data := strings.Split(string(buffer), ":")[0]
-	data := string(buffer)
+	data := strings.Split(string(buffer), ":::")[0]
+	//data := string(buffer)
         fmt.Println("data:"+data)
         return data
 }
 
+func fileExists(filename string) bool {
+   _, err := os.Stat(filename)
+   if os.IsNotExist(err) {
+       return false
+   }
+   return true
+}
+
+func faceDetection(fileName string) string{
+    var data string
+    fmt.Println("connecting to:"+FACE_DETECT_HOST) 
+    conn, err := net.Dial(S_CONN_TYPE, FACE_DETECT_HOST+":"+FACE_DETECT_PORT)
+    defer conn.Close()
+    Check(err, "Unable to connect to server")
+    SendText(conn, "string", fileName)
+    data = RecvText(conn, "string")
+    fmt.Println("Received data: ",data)
+    return data
+} 
 func handleRequest(clientCon net.Conn) {
     var msg string
     var processedFileName string
@@ -206,18 +186,18 @@ func handleRequest(clientCon net.Conn) {
     //Check(err, "Unable to convert string to integer")
     //fileName := getImageFromRaspberrypi(ip[rasperryIpIndex])
     fileName := getImageFromRaspberrypi(strings.TrimSpace(options[0]))
-    img := gocv.IMRead(fileName, gocv.IMReadColor )
-    if img.Empty() {
-       fmt.Println("Unable to read Image file")
+    fmt.Println("fileName from getImage:"+fileName)
+    if !fileExists(fileName) {    
+      fmt.Println("file not exists")
     } else {
        fmt.Println("processing the image option:"+options[1])
        //go faceDetection(img)
       options[1] = "facedetection" 
        switch options[1]{
           case "facedetection":
-              processedFileName = faceDetection(img)
+              processedFileName = faceDetection(fileName)
           case "faceblur":
-              processedFileName = faceDetection(img)        
+              processedFileName = faceDetection(fileName)        
           default:
               fmt.Println("Invalid option")       
       }
@@ -230,9 +210,9 @@ func getImageFromRaspberrypi(S_CONN_HOST string) string {
         fmt.Println("connecting to:"+S_CONN_HOST) 
         conn, err := net.Dial(S_CONN_TYPE, S_CONN_HOST+":"+S_CONN_PORT)
         Check(err, "Unable to connect to server")
-        home, err := os.UserHomeDir()
-        Check(err, "Unable to get home directory")
-        data = RecvFile(conn,home+"/")
+        //home, err := os.UserHomeDir()
+        //Check(err, "Unable to get home directory")
+        data = RecvFile(conn,"/tmp/")
         fmt.Println("Received file: ",data)
         return data 
 }
