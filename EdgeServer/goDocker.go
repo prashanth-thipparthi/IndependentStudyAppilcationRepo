@@ -10,7 +10,7 @@ import (
         "github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
-//       "github.com/docker/go-connections/nat"
+       "github.com/docker/go-connections/nat"
 )
 func stopContainer() {
 	ctx := context.Background()
@@ -32,7 +32,7 @@ func stopContainer() {
 		fmt.Println("Success")
 	}
 }
-func start_container() {
+func startContainer() {
 	ctx := context.Background()
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
@@ -46,9 +46,9 @@ func start_container() {
 		panic(err)
 	}
 	io.Copy(os.Stdout, out)
-
+*/
         hostBinding := nat.PortBinding{
-		HostIP:   "{0.0.0.0}",
+		HostIP:   "0.0.0.0",
 		HostPort: "8180",
 	}
 	containerPort, err :=  nat.NewPort("tcp", "8180")  //nat.Port("8179/tcp")
@@ -57,12 +57,12 @@ func start_container() {
 	}
 
 	portBinding := nat.PortMap{containerPort: []nat.PortBinding{hostBinding}}
-*/
+
 //	portBinding := nat.PortMap{containerPort: hostBinding}
 	resp, err := cli.ContainerCreate(ctx, &container.Config{
 		Image: imageName,
 	}, &container.HostConfig{
- //               PortBindings: portBinding,
+               PortBindings: portBinding,
                 Mounts: []mount.Mount{
                         { 
                             Type: mount.TypeBind,
@@ -83,5 +83,6 @@ func start_container() {
 }
 
 func main() {
-   start_container();
+   startContainer();
+   //stopContainer();
 }

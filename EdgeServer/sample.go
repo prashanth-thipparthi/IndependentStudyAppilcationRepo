@@ -10,7 +10,7 @@ import (
 const (
 //        S_CONN_HOST = "192.168.43.48"
         FACE_DETECT_HOST="0.0.0.0"
-        FACE_DETECT_PORT="8179"
+        FACE_DETECT_PORT="8180"
         S_CONN_PORT = "8181"
         S_CONN_TYPE = "tcp"
 )

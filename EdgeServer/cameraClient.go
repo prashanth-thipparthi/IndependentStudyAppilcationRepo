@@ -7,6 +7,13 @@ import (
         "os"
         "strconv"
         "strings"
+        "context" 
+        "github.com/docker/docker/api/types"
+        "github.com/docker/docker/api/types/mount"
+        "github.com/docker/docker/api/types/container"
+        "github.com/docker/docker/client"
+        "github.com/docker/go-connections/nat"
+
 )
 
 import (
@@ -26,13 +33,84 @@ const (
         BUFFERSIZE = 1024
 )
 
-//var ip = []string{"192.168.43.48",""}
+var ip = []string{"192.168.43.48","192.168.43.47"}
 
 func Check(e error, s string) {
         if e != nil {
                 fmt.Println(s)
                 panic(e)
         }
+}
+
+func stopContainer() {
+        ctx := context.Background()
+        cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+        if err != nil {
+                panic(err)
+        }
+
+        containers, err := cli.ContainerList(ctx, types.ContainerListOptions{})
+        if err != nil {
+                panic(err)
+        }
+
+        for _, container := range containers {
+                fmt.Print("Stopping container ", container.ID[:10], "... ")
+                if err := cli.ContainerStop(ctx, container.ID, nil); err != nil {
+                        panic(err)
+                }
+                fmt.Println("Success")
+        }
+}
+
+func startContainer(imageName string) {
+        ctx := context.Background()
+        cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+        if err != nil {
+                panic(err)
+        }
+
+        
+
+/*      out, err := cli.ImagePull(ctx, imageName, types.ImagePullOptions{})
+        if err != nil {
+                panic(err)
+        }
+        io.Copy(os.Stdout, out)
+*/
+        hostBinding := nat.PortBinding{
+                HostIP:   "0.0.0.0",
+                HostPort: "8180",
+        }
+        containerPort, err :=  nat.NewPort("tcp", "8180")  //nat.Port("8179/tcp")
+        if err != nil {
+                panic("Unable to get the port")
+        }
+
+        portBinding := nat.PortMap{containerPort: []nat.PortBinding{hostBinding}}
+
+//      portBinding := nat.PortMap{containerPort: hostBinding}
+        resp, err := cli.ContainerCreate(ctx, &container.Config{
+                Image: imageName,
+        }, &container.HostConfig{
+               PortBindings: portBinding,
+                Mounts: []mount.Mount{
+                        {
+                            Type: mount.TypeBind,
+                            Source: "/tmp/",
+                            Target: "/tmp/",
+                   },
+              },
+        }, nil, "")
+        if err != nil {
+                panic(err)
+        }
+
+        if err := cli.ContainerStart(ctx, resp.ID, types.ContainerStartOptions{}); err != nil {
+                panic(err)
+        }
+
+        fmt.Println(resp.ID)
 }
 
 func RecvFile(conn net.Conn, path string) string {
@@ -167,14 +245,18 @@ func fileExists(filename string) bool {
 
 func faceDetection(fileName string) string{
     var data string
+    imageName := "tnreddy9/face_detection"
+    startContainer(imageName)
+    time.Sleep(5*time.Second) 
     fmt.Println("connecting to:"+FACE_DETECT_HOST) 
-    time.Sleep(100000) 
     conn, err := net.Dial(S_CONN_TYPE, FACE_DETECT_HOST+":"+FACE_DETECT_PORT)
     defer conn.Close()
     Check(err, "Unable to connect to server")
     SendText(conn, "string", fileName)
     data = RecvText(conn, "string")
     fmt.Println("Received data: ",data)
+    time.Sleep(5*time.Second)
+    stopContainer()
     return data
 } 
 func handleRequest(clientCon net.Conn) {
@@ -183,10 +265,10 @@ func handleRequest(clientCon net.Conn) {
     processedFileName = "" 
     msg = RecvText(clientCon,  "string")
     options := strings.Split(msg, ",")
-    //rasperryIpIndex, err := strconv.Atoi(options[0]) // if we want to  assign rpi's indices and use their index we can uncomment this line
-    //Check(err, "Unable to convert string to integer")
-    //fileName := getImageFromRaspberrypi(ip[rasperryIpIndex])
-    fileName := getImageFromRaspberrypi(strings.TrimSpace(options[0]))
+    rasperryIpIndex, err := strconv.Atoi(options[0]) // if we want to  assign rpi's indices and use their index we can uncomment this line
+    Check(err, "Unable to convert string to integer")
+    fileName := getImageFromRaspberrypi(ip[rasperryIpIndex])
+//    fileName := getImageFromRaspberrypi(strings.TrimSpace(options[0]))
     fmt.Println("fileName from getImage:"+fileName)
     if !fileExists(fileName) {    
       fmt.Println("file not exists")
