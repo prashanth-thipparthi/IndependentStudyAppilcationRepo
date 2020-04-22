@@ -37,7 +37,7 @@ func faceDetection(img gocv.Mat)(string) {
 
         defer img.Close()
 
-        xmlFile := "/home/tnr/IndependentStudyAppilcationRepo/EdgeServer/face_detection/haarcascade_frontalface_alt.xml"
+        xmlFile := "/IndependentStudyAppilcationRepo/EdgeServer/face_detection/haarcascade_frontalface_alt.xml"
 
         // color for the rect when faces detected
         //blue := color.RGBA{0, 0, 255, 0}
