@@ -17,11 +17,11 @@ import (
 const (
 //        S_CONN_HOST = "192.168.43.48"
         FACE_DETECT_HOST="0.0.0.0"
-        FACE_DETECT_PORT="8179"
+        FACE_DETECT_PORT="8180"
         S_CONN_PORT = "8181"
         S_CONN_TYPE = "tcp"
         CONN_HOST = "0.0.0.0"
-        CONN_PORT = "8180"
+        CONN_PORT = "8179"
         CONN_TYPE = "tcp"
         BUFFERSIZE = 1024
 )
@@ -168,6 +168,7 @@ func fileExists(filename string) bool {
 func faceDetection(fileName string) string{
     var data string
     fmt.Println("connecting to:"+FACE_DETECT_HOST) 
+    time.Sleep(100000) 
     conn, err := net.Dial(S_CONN_TYPE, FACE_DETECT_HOST+":"+FACE_DETECT_PORT)
     defer conn.Close()
     Check(err, "Unable to connect to server")

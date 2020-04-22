@@ -19,7 +19,7 @@ import (
 
 const (
         CONN_HOST = "0.0.0.0"
-        CONN_PORT = "8179"
+        CONN_PORT = "8180"
         CONN_TYPE = "tcp"
         BUFFERSIZE = 1024
 )

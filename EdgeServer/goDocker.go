@@ -10,7 +10,7 @@ import (
         "github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
-       "github.com/docker/go-connections/nat"
+//       "github.com/docker/go-connections/nat"
 )
 func stopContainer() {
 	ctx := context.Background()
@@ -32,41 +32,42 @@ func stopContainer() {
 		fmt.Println("Success")
 	}
 }
-func main() {
+func start_container() {
 	ctx := context.Background()
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		panic(err)
 	}
 
-	imageName := "tnreddy9/camera_client"
+	imageName := "tnreddy9/face_detection"
 
 /*	out, err := cli.ImagePull(ctx, imageName, types.ImagePullOptions{})
 	if err != nil {
 		panic(err)
 	}
 	io.Copy(os.Stdout, out)
-*/
+
         hostBinding := nat.PortBinding{
-		HostIP:   "0.0.0.0",
-		HostPort: "8179",
+		HostIP:   "{0.0.0.0}",
+		HostPort: "8180",
 	}
-	containerPort := nat.Port("8180/tcp")
+	containerPort, err :=  nat.NewPort("tcp", "8180")  //nat.Port("8179/tcp")
 	if err != nil {
 		panic("Unable to get the port")
 	}
 
 	portBinding := nat.PortMap{containerPort: []nat.PortBinding{hostBinding}}
+*/
 //	portBinding := nat.PortMap{containerPort: hostBinding}
 	resp, err := cli.ContainerCreate(ctx, &container.Config{
 		Image: imageName,
 	}, &container.HostConfig{
-                PortBindings: portBinding,
+ //               PortBindings: portBinding,
                 Mounts: []mount.Mount{
                         { 
                             Type: mount.TypeBind,
-                            Source: "/tmp/data",
-                            Target: "/tmp/data",
+                            Source: "/tmp/",
+                            Target: "/tmp/",
                         },
               },
         }, nil, "")
@@ -79,4 +80,8 @@ func main() {
 	}
 
 	fmt.Println(resp.ID)
+}
+
+func main() {
+   start_container();
 }

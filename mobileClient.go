@@ -13,7 +13,7 @@ import (
 
 const (
         CONN_HOST = "192.168.43.81"
-        CONN_PORT = "8180"
+        CONN_PORT = "8179"
         CONN_TYPE = "tcp"
         BUFFERSIZE = 1024
 )
@@ -74,6 +74,6 @@ func main(){
     SendText(conn,"text","192.168.43.48,facedetection")
 //    home, err := os.UserHomeDir()
 //    Check(err, "Unable to get home directory")
-    data = RecvFile(conn,"/tmp/data/")
+    data = RecvFile(conn,"/home/tnr/")
     fmt.Println("Received file: ",data)
 }
